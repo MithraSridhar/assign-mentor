@@ -92,4 +92,36 @@ router.post("/assignStudentsToMentor", async (req, res) => {
     return;
   }
 });
+
+//Change mentor for a student
+router.post("/changeMentor", async (req, res) => {
+  const student = req.body.student;
+  const mentor = req.body.mentor;
+  console.log(mentor);
+  console.log(student);
+
+  const result = await studentModel.findOne({ name: student });
+
+  console.log(result.current_mentor);
+  const result1 = await studentModel.findOneAndUpdate(
+    { name: student },
+    { current_mentor: mentor, previous_mentor: result.current_mentor }
+  );
+  console.log(result1);
+  const result2 = await mentortModel.findOneAndUpdate(
+    { name: mentor },
+    { $addToSet: { students: student } }
+  );
+  res.send("Mentors added successfully");
+});
+
+//get previous mentor for a student
+router.get("/getPreviousMentor", async (req, res) => {
+  try {
+    const student = await studentModel.findOne({ name: req.body.student });
+    res.send({ previous_mentor: student.previous_mentor });
+  } catch (error) {
+    res.status(400).json(error);
+  }
+});
 module.exports = router;
